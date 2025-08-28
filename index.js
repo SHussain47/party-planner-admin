@@ -1,7 +1,7 @@
 // === Constants ===
-const BASE = "https://fsa-crud-2aa9294fe819.herokuapp.com/api";
-const COHORT = ""; // Make sure to change this!
-const API = BASE + COHORT;
+const BaseUrl = "https://fsa-crud-2aa9294fe819.herokuapp.com/api";
+const Cohort = "2506-ftb-ct-web-pt";
+const API = `${BaseUrl}/${Cohort}`;
 
 // === State ===
 let parties = [];
