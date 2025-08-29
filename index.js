@@ -154,7 +154,7 @@ function SelectedParty() {
         <input name="location" type="text" placeholder="Location"/>
       </label>
     </form>
-    <button class="edit-btn" data-action="edit">Edit</button>
+    <button class="edit-save-btn" data-action="edit">Edit</button>
     <button class="delete-btn">Delete</button>
   `;
   $party.querySelector("GuestList").replaceWith(GuestList());
