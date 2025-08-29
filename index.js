@@ -136,15 +136,33 @@ function SelectedParty() {
     <address>${selectedParty.location}</address>
     <p>${selectedParty.description}</p>
     <GuestList></GuestList>
-    <button>Edit</button>
-    <button>Delete</button>
+    <form class="edit-form" hidden>
+      <label>
+        Name
+        <input name="name" type="text" placeholder="Name"/>
+      </label>
+      <label>
+        Date
+        <input name="date" type="text" placeholder="Date"/>
+      </label>
+      <label>
+        Description
+        <input name="description" type="text" placeholder="Description"/>
+      </label>
+      <label>
+        Location
+        <input name="location" type="text" placeholder="Location"/>
+      </label>
+    </form>
+    <button class="edit-btn" data-action="edit">Edit</button>
+    <button class="delete-btn">Delete</button>
   `;
   $party.querySelector("GuestList").replaceWith(GuestList());
 
   // Logic to edit an event
 
   // Logic to delete an event
-  const $delete = $party.querySelector("button");
+  const $delete = $party.querySelector(".delete-btn");
   $delete.addEventListener("click", function (event) {
     event.preventDefault();
     deleteParty(selectedParty.id);
@@ -155,6 +173,7 @@ function SelectedParty() {
 
 function AddNewPartyForm() {
   const $form = document.createElement("form");
+  $form.classList.add("new-party-form");
   // Creating structure of AddNewPartyForm
   $form.innerHTML = `
     <label>

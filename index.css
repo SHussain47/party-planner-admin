@@ -44,7 +44,7 @@ main {
   font-style: italic;
 }
 
-form {
+.new-party-form {
   display: grid;
   gap: 1ch;
   padding: 0 1rem;
