@@ -52,4 +52,6 @@ form {
 
 label {
   display: grid;
+  font-size: 19px;
+  font-weight: normal;
 }

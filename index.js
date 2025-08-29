@@ -33,6 +33,40 @@ async function getParty(id) {
   }
 }
 
+/** Add new event */
+async function addParty(party) {
+  try {
+    await fetch(`${API}/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(party),
+    });
+    // Refreshes party list and adds newly added party
+    await getParties();
+  } catch (error) {
+    console.error("Error with /POST addParty function : ", error);
+  }
+}
+
+/** Update an event */
+async function updateParty(id) {
+  
+}
+
+/** Delete an event */
+async function deleteParty(id) {
+  try {
+    await fetch(`${API}/events/${id}`, {
+      method: "DELETE",
+    });
+    // Set selectedParty back to null so user has to pick a new event 
+    selectedParty = null;
+    getParties();
+  } catch (error) {
+    console.error("Error with /DELETE deleteParty functinon : ", error);
+  }
+}
+
 /** Updates state with all RSVPs from the API */
 async function getRsvps() {
   try {
@@ -102,19 +136,70 @@ function SelectedParty() {
     <address>${selectedParty.location}</address>
     <p>${selectedParty.description}</p>
     <GuestList></GuestList>
+    <button>Edit</button>
+    <button>Delete</button>
   `;
   $party.querySelector("GuestList").replaceWith(GuestList());
 
+  // Logic to edit an event
+
+  // Logic to delete an event
+  const $delete = $party.querySelector("button");
+  $delete.addEventListener("click", function (event) {
+    event.preventDefault();
+    deleteParty(selectedParty.id);
+  });
+
   return $party;
+}
+
+function AddNewPartyForm() {
+  const $form = document.createElement("form");
+  // Creating structure of AddNewPartyForm
+  $form.innerHTML = `
+    <label>
+      Name
+      <input name="name" type="text" placeholder="Name"/>
+    </label>
+    <label>
+      Date
+      <input name="date" type="text" placeholder="Date"/>
+    </label>
+    <label>
+      Description
+      <input name="description" type="text" placeholder="Description"/>
+    </label>
+    <label>
+      Location
+      <input name="location" type="text" placeholder="Location"/>
+    </label>
+    <button>Add New Party</button>
+  `;
+
+  // Now that a button [Add New Party] is created - Need to have a response to interaction
+  $form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    // Create an obj to collect all the data
+    const data = new FormData($form);
+    // Grapping info from data and organising them into a new object with only desired info
+    const newParty = {
+      name: data.get("name"),
+      date: new Date(data.get("date")).toISOString(),
+      description: data.get("description"),
+      location: data.get("location"),
+    };
+    // Call addParty function and pass the newParty obj as the parameter
+    addParty(newParty);
+  })
+
+  return $form;
 }
 
 /** List of guests attending the selected party */
 function GuestList() {
   const $ul = document.createElement("ul");
   const guestsAtParty = guests.filter((guest) =>
-    rsvps.find(
-      (rsvp) => rsvp.guestId === guest.id && rsvp.eventId === selectedParty.id
-    )
+    rsvps.find((rsvp) => rsvp.guestId === guest.id && rsvp.eventId === selectedParty.id)
   );
 
   // Simple components can also be created anonymously:
@@ -142,11 +227,16 @@ function render() {
         <h2>Party Details</h2>
         <SelectedParty></SelectedParty>
       </section>
+      <section>
+        <h2>Add A New Party<h2>
+        <AddNewPartyForm></AddNewPartyForm>
+      </section>
     </main>
   `;
 
   $app.querySelector("PartyList").replaceWith(PartyList());
   $app.querySelector("SelectedParty").replaceWith(SelectedParty());
+  $app.querySelector("AddNewPartyForm").replaceWith(AddNewPartyForm());
 }
 
 async function init() {
