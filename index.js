@@ -15,7 +15,7 @@ async function getParties() {
     const response = await fetch(API + "/events");
     const result = await response.json();
     parties = result.data;
-    render();
+    // render();
   } catch (e) {
     console.error(e);
   }
@@ -49,8 +49,22 @@ async function addParty(party) {
 }
 
 /** Update an event */
-async function updateParty(id) {
-  
+async function updateParty(id, updatedEvent) {
+  try {
+    await fetch(`${API}/events/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedEvent),
+    });
+    // Refresh data
+    if (selectedParty && selectedParty.id === id) {
+      await getParty(id);
+    } else {
+      await getParties();
+    }
+  } catch (error) {
+    console.error("Error with /PUT updateParty function : ", error);
+  }
 }
 
 /** Delete an event */
@@ -59,7 +73,7 @@ async function deleteParty(id) {
     await fetch(`${API}/events/${id}`, {
       method: "DELETE",
     });
-    // Set selectedParty back to null so user has to pick a new event 
+    // Set selectedParty back to null so user has to pick a new event
     selectedParty = null;
     getParties();
   } catch (error) {
@@ -73,7 +87,7 @@ async function getRsvps() {
     const response = await fetch(API + "/rsvps");
     const result = await response.json();
     rsvps = result.data;
-    render();
+    // render();
   } catch (e) {
     console.error(e);
   }
@@ -85,7 +99,7 @@ async function getGuests() {
     const response = await fetch(API + "/guests");
     const result = await response.json();
     guests = result.data;
-    render();
+    // render();
   } catch (e) {
     console.error(e);
   }
@@ -143,7 +157,7 @@ function SelectedParty() {
       </label>
       <label>
         Date
-        <input name="date" type="text" placeholder="Date"/>
+        <input name="date" type="date" placeholder="Date"/>
       </label>
       <label>
         Description
@@ -154,16 +168,47 @@ function SelectedParty() {
         <input name="location" type="text" placeholder="Location"/>
       </label>
     </form>
-    <button class="edit-save-btn" data-action="edit">Edit</button>
+    <button class="edit-save-btn" data-action="edit" data-id=${selectedParty.id}>Edit</button>
     <button class="delete-btn">Delete</button>
   `;
   $party.querySelector("GuestList").replaceWith(GuestList());
 
   // Logic to edit an event
+  const $editSaveBtn = $party.querySelector(".edit-save-btn");
+  const $form = $party.querySelector(".edit-form");
+  $editSaveBtn.addEventListener("click", async function (event) {
+    event.preventDefault();
+    // Store the id of current event so can target for update if needed
+    const id = Number(event.currentTarget.dataset.id);
+    // Store the value of data-action (edit) in variable action
+    const action = event.currentTarget.dataset.action;
+
+    if (action === "edit") {
+      $form.hidden = false;
+      event.currentTarget.dataset.action = "save";
+      event.currentTarget.textContent = "Save";
+      return;
+    }
+
+    if (action === "save") {
+      const data = new FormData($form);
+      const updatedEvent = {
+        name: data.get("name"),
+        date: new Date(data.get("date")).toISOString(),
+        description: data.get("description"),
+        location: data.get("location"),
+      };
+      await updateParty(id, updatedEvent);
+      $form.hidden = true;
+      event.currentTarget.dataset.action = "edit";
+      event.currentTarget.textContent = "Edit";
+      PartyList();
+    }
+  });
 
   // Logic to delete an event
   const $delete = $party.querySelector(".delete-btn");
-  $delete.addEventListener("click", function (event) {
+  $delete.addEventListener("click", async function (event) {
     event.preventDefault();
     deleteParty(selectedParty.id);
   });
@@ -182,7 +227,7 @@ function AddNewPartyForm() {
     </label>
     <label>
       Date
-      <input name="date" type="text" placeholder="Date"/>
+      <input name="date" type="date" placeholder="Date"/>
     </label>
     <label>
       Description
@@ -209,7 +254,9 @@ function AddNewPartyForm() {
     };
     // Call addParty function and pass the newParty obj as the parameter
     addParty(newParty);
-  })
+    // Reset form 
+    $form.reset;
+  });
 
   return $form;
 }
@@ -259,9 +306,8 @@ function render() {
 }
 
 async function init() {
-  await getParties();
-  await getRsvps();
-  await getGuests();
+  // Reduces redundancy so render() isn't running 3 times to load data
+  await Promise.all([getParties(), getRsvps(), getGuests()]);
   render();
 }
 
