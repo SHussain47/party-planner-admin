@@ -15,7 +15,7 @@ async function getParties() {
     const response = await fetch(API + "/events");
     const result = await response.json();
     parties = result.data;
-    // render();
+    render();
   } catch (e) {
     console.error(e);
   }
@@ -57,10 +57,9 @@ async function updateParty(id, updatedEvent) {
       body: JSON.stringify(updatedEvent),
     });
     // Refresh data
+    await getParties();
     if (selectedParty && selectedParty.id === id) {
       await getParty(id);
-    } else {
-      await getParties();
     }
   } catch (error) {
     console.error("Error with /PUT updateParty function : ", error);
@@ -87,7 +86,7 @@ async function getRsvps() {
     const response = await fetch(API + "/rsvps");
     const result = await response.json();
     rsvps = result.data;
-    // render();
+    render();
   } catch (e) {
     console.error(e);
   }
@@ -99,7 +98,7 @@ async function getGuests() {
     const response = await fetch(API + "/guests");
     const result = await response.json();
     guests = result.data;
-    // render();
+    render();
   } catch (e) {
     console.error(e);
   }
@@ -198,11 +197,10 @@ function SelectedParty() {
         description: data.get("description"),
         location: data.get("location"),
       };
-      await updateParty(id, updatedEvent);
-      $form.hidden = true;
       event.currentTarget.dataset.action = "edit";
       event.currentTarget.textContent = "Edit";
-      PartyList();
+      $form.hidden = true;
+      await updateParty(id, updatedEvent);
     }
   });
 
@@ -254,7 +252,7 @@ function AddNewPartyForm() {
     };
     // Call addParty function and pass the newParty obj as the parameter
     addParty(newParty);
-    // Reset form 
+    // Reset form
     $form.reset;
   });
 
@@ -306,7 +304,6 @@ function render() {
 }
 
 async function init() {
-  // Reduces redundancy so render() isn't running 3 times to load data
   await Promise.all([getParties(), getRsvps(), getGuests()]);
   render();
 }
